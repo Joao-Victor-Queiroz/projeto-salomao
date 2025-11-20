@@ -61,6 +61,7 @@ Desenvolvi uma solução Full Stack para **digitalizar 100% desse processo**. O 
 - [ ] **Controle de acesso baseado em RBAC:** Permissões diferenciadas para Coordenadores (acesso total) e Catequistas (visualização restrita).
 - [ ] **Gestão Financeira de Eventos:** Controle de pagamentos (retiros, camisetas) com status (Pendente/Pago) por participante.
 - [ ] **Notificações Push:** Lembretes automáticos sobre encontros e avisos importantes via OneSignal ou Expo Notifications.
+- [ ] **Migração para TypeScript no Back-end:** Refatorar a API para TypeScript visando melhor tipagem, intellisense e facilidade de manutenção.
 
 ## 🛠️ Decisões Técnicas
 
