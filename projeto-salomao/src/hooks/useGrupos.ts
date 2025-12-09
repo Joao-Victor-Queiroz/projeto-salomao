@@ -114,7 +114,7 @@ export const useRemoverCrismandoDoGrupo = () => {
       if (!idGrupo || !idCrismando) {
         throw new Error("ID do grupo ou do crismando não fornecido");
       }
-      return await api.post(
+      return await api.delete(
         `/grupos-crismandos/${idGrupo}/remover-crismando/${idCrismando}`
       );
     },
@@ -127,11 +127,11 @@ export const useRemoverCrismandoDoGrupo = () => {
 
 export const useRegistrarFrequencia = () => {
   return useMutation({
-    mutationFn: async ({ frequencias }: { frequencias: FrequenciaPost[] }) => {
+    mutationFn: async ({ dataPresenca, frequencias }: { dataPresenca: string, frequencias: FrequenciaPost[] }) => {
       if (!Array.isArray(frequencias) || frequencias.length === 0) {
         throw new Error("Frequências inválidas ou não fornecidas");
       }
-      return await api.post(`/frequencia`, { frequencias });
+      return await api.post(`/frequencia`, { dataPresenca, frequencias });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["grupos"] });

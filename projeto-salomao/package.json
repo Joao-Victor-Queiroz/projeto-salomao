@@ -17,6 +17,7 @@
     "@codler/react-native-keyboard-aware-scroll-view": "^2.0.1",
     "@expo-google-fonts/poppins": "^0.3.1",
     "@expo/vector-icons": "^14.1.0",
+    "@gorhom/bottom-sheet": "^5.2.6",
     "@hookform/resolvers": "^5.0.1",
     "@react-navigation/native": "^7.1.6",
     "@tanstack/react-query": "^5.76.1",
@@ -39,14 +40,14 @@
     "react-hook-form": "^7.56.4",
     "react-native": "0.79.2",
     "react-native-currency-input": "^1.1.1",
+    "react-native-gesture-handler": "~2.24.0",
     "react-native-mask-input": "^1.2.3",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
     "react-native-toast-message": "^2.3.3",
     "react-native-web": "~0.20.0",
-    "zod": "^3.25.7",
-    "react-native-gesture-handler": "~2.24.0"
+    "zod": "^3.25.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

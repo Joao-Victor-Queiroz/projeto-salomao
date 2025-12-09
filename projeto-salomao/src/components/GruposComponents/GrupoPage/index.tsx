@@ -18,9 +18,10 @@ import ModalAdicionarCrismando from "../ModalAddCrismando";
 import ModalConfirmacao from "@/components/ModalRemoverConfirmacao";
 import RegistroFrequencia from "../RegistroFrequencia";
 import GrupoCrismandoCard from "../GrupoCrismandoCard";
+import ModalRemoverConfirmacao from "@/components/ModalRemoverConfirmacao"
 import HeaderComponent from "@/components/HeaderComponent";
 import { colors } from "@/styles/theme";
-import { useRemoverGrupo } from "@/hooks/useGrupos";
+import { useRemoverGrupo, useRemoverCrismandoDoGrupo } from "@/hooks/useGrupos";
 import Toast from "react-native-toast-message";
 import { formatToBrazilianCurrency } from "@/lib/formatToBrazilianCurrency";
 
@@ -36,6 +37,9 @@ export default function GrupoPage({ data, isLoading }: Props) {
   
 
   const { mutate: removerGrupo, isPending } = useRemoverGrupo();
+  const { mutate: removerCrismandoGrupo, isPending: isPendingRemoverCrismando, error} = useRemoverCrismandoDoGrupo()
+
+  
 
   const { user } = useUser();
 
@@ -44,6 +48,9 @@ export default function GrupoPage({ data, isLoading }: Props) {
   const [modalCrismandosVisible, setModalCrismandosVisible] = useState(false);
   const [modalFrequenciaVisible, setModalFrequenciaVisible] = useState(false);
   const [modalConfirmacaoVisible, setModalConfirmacaoVisible] = useState(false);
+  const [modalRemoverConfirmacaoVisible, setModalRemoverConfirmacaoVisible] = useState(false)
+  const [idCrismandoParaRemover, setIdCrismandoParaRemover] = useState<string | null>(null)
+  const [nomeCrismandoParaRemover, setNomeCrismandoParaRemover] = useState<string | null>(null)
 
  const dataCrismandosOrdenados = data.crismandos
   ? [...data.crismandos].sort((a, b) => {
@@ -65,6 +72,35 @@ export default function GrupoPage({ data, isLoading }: Props) {
 
     const totalCaixinhaGrupo = caixinhasCrismandos?.reduce((acc, caixinha) => acc + caixinha.valorPago, 0)
    
+  const handleRemoverCrismandoDoGrupo = (idCrismando: string) => {
+    if(!idCrismando){
+      return;
+    }
+
+    removerCrismandoGrupo({idGrupo: data._id!, idCrismando}, {
+      onSuccess: () => {
+        Toast.show({
+          type: 'success',
+          text1: 'Crismando removido do grupo com sucesso!',
+          visibilityTime: 3000,
+        })
+      },
+      onError: (error: any) => {
+        console.log(error.response?.data)
+        console.log(error)
+        Toast.show({
+          type: 'error',
+          text1: 'Erro ao remover crismando do grupo',
+          visibilityTime: 3000,
+        })
+      },
+      onSettled: () => {
+        setModalRemoverConfirmacaoVisible(false)
+        setIdCrismandoParaRemover(null)
+      }
+    })
+  }
+
   const handleRemoverGrupo = (idGrupo: string) => {
     if (!idGrupo) {
       return;
@@ -97,7 +133,7 @@ export default function GrupoPage({ data, isLoading }: Props) {
     });
   };
 
-  if (isLoading || isPending) return <Loading isVisible={isLoading} />;
+  if (isLoading || isPending || isPendingRemoverCrismando) return <Loading isVisible={isLoading} />;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -136,7 +172,7 @@ export default function GrupoPage({ data, isLoading }: Props) {
                 onPress={() => setModalCrismandosVisible(true)}
               >
                 <Button.Title isBlackText>
-                  Adicionar Crismando{" "}
+                  Adicionar Crismando
                   <Feather name="user-plus" size={16} color="black" />
                 </Button.Title>
               </Button>
@@ -156,10 +192,18 @@ export default function GrupoPage({ data, isLoading }: Props) {
 
             return(
             <Swipeable 
-          
+           
             containerStyle={{borderRadius: 8}} 
-            renderRightActions={() => <SwipeableOption text="Remover crismando do grupo?"/>}
+            renderRightActions={() => <SwipeableOption onPress={() => { 
+              setModalRemoverConfirmacaoVisible(true); 
+              setIdCrismandoParaRemover(item._id!);
+              setNomeCrismandoParaRemover(item.nomeCrismando);
+              console.log("id crismando", item._id)
+              console.log("id grupo", data._id)
+            }}
+              />}
             overshootRight={false}
+
             >
               <GrupoCrismandoCard data={item} />
             </Swipeable>
@@ -203,6 +247,13 @@ export default function GrupoPage({ data, isLoading }: Props) {
       onClose={() => setModalConfirmacaoVisible(false)}
       title={`Remover ${data.nomeGrupo}?`}
       onRemove={() => handleRemoverGrupo(data._id!)}
+      />
+      <ModalRemoverConfirmacao 
+      isVisible={modalRemoverConfirmacaoVisible} 
+      onClose={() => setModalRemoverConfirmacaoVisible(false)}
+      onRemove={() => handleRemoverCrismandoDoGrupo(idCrismandoParaRemover!)}
+      title={`Deseja remover ${nomeCrismandoParaRemover} do grupo?`}
+      
       />
     </SafeAreaView>
   );

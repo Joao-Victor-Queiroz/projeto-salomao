@@ -76,6 +76,10 @@ export const styles = StyleSheet.create({
     paddingLeft: 16,
     fontFamily: fontFamily.light,
   },
+   emptyMessage:{
+    fontFamily: fontFamily.bold,
+    fontSize: 18
+  }
   // dataInput: {
   //   flexDirection: "row",
   //   alignItems: "center",

@@ -154,11 +154,14 @@ export const adicionarCrismandoAoGrupo = async (req, res) => {
 export const removerCrismandoDoGrupo = async (req, res) => {
   try {
     const { idCrismando, idGrupo } = req.params;
+    console.log("ID Crismando:", idCrismando)
+     console.log("ID Grupo:", idGrupo)
 
     const grupo = await Grupo.findById(idGrupo);
     if (!grupo) {
       return res.status(404).json({ message: "O grupo não foi encontrado" });
     }
+    console.log("Grupo: ", grupo)
 
     const crismando = await Crismando.findById(idCrismando);
     if (!crismando) {
@@ -166,6 +169,7 @@ export const removerCrismandoDoGrupo = async (req, res) => {
         .status(404)
         .json({ message: "O crismando não foi encontrado" });
     }
+    console.log("Crismando: ", crismando)
 
     if (crismando.grupo?.toString() !== idGrupo) {
       return res
@@ -181,18 +185,10 @@ export const removerCrismandoDoGrupo = async (req, res) => {
       $set: { grupo: null },
     });
 
-    // grupo.crismandos = grupo.crismandos.filter(
-    //   (c) => c.toString() !== idCrismando
-    // );
-    // await grupo.save();
-
-    // crismando.grupo = null;
-    // await crismando.save();
-
     res
       .status(200)
       .json({ message: "Crismando adicionado com sucesso", crismando });
   } catch (error) {
-    res.status(500).json({ message: "Erro ao adicionar crismando" });
+    res.status(500).json({ message: "Erro ao remover crismando" });
   }
 };

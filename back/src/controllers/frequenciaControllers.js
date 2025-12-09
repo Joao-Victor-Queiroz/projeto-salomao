@@ -4,7 +4,7 @@ import { parse } from "date-fns";
 
 export const registrarFrequencia = async (req, res) => {
   try {
-    const { frequencias } = req.body;
+    const { dataPresenca: dataRegistrada, frequencias } = req.body;
 
     if (!Array.isArray(frequencias) || frequencias.length === 0) {
       return res.status(400).json({ message: "Nenhuma frequência registrada" });
@@ -12,7 +12,7 @@ export const registrarFrequencia = async (req, res) => {
     const frequenciasFormatadas = frequencias.map((item) => ({
       crismando: item.crismando,
       status: item.status,
-      dataPresenca: parse(item.dataPresenca, "dd/MM/yyyy", new Date()),
+      dataPresenca: parse(dataRegistrada, "dd/MM/yyyy", new Date()),
       justificativa: item.justificativa || null,
     }));
 

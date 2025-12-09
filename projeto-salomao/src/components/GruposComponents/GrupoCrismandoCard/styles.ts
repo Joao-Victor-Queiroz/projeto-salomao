@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: 'center',
     padding: 10,
-    borderRadius: 8,
+    borderStartStartRadius:8,
   },
   infoCrismando: {
     fontFamily: fontFamily.medium
@@ -26,7 +26,8 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     alignItems:"center",
-    justifyContent: "center"
+    justifyContent: "center",
+
   }
 
 })

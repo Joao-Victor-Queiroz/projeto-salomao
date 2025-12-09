@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   ScrollView,
+  TouchableHighlight,
 } from "react-native";
 import { useState, useEffect } from "react";
 import MaskInput, { Masks } from "react-native-mask-input";
@@ -23,57 +24,51 @@ import { Crismando, FrequenciaPost } from "@/types/crismando";
 import { useRegistrarFrequencia } from "@/hooks/useGrupos";
 import Toast from "react-native-toast-message";
 
+import {z} from "zod"
+import { useForm, useFieldArray, Controller} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { formatToBrazilianDate } from "@/lib/formatToBrazilianDate";
+
+import MaskInputs from "@/components/Input/MaskInput";
+
+const frequenciaSchema = z.object({
+  dataPresenca: z.string().min(10, {message: "Informe uma data válida"}),
+  frequencias: z.array(z.object({
+    crismando: z.string(),
+    status: z.enum(["P", "FJ", "FNJ"]),
+    justificativa: z.string().optional(),
+  }))
+})
+
+type FrequenciaSchemaType = z.infer<typeof frequenciaSchema>
+
 type Props = {
   isVisible: boolean;
   onClose: () => void;
   idGrupo: string;
 };
 
-export default function RegistroFrequencia({
-  isVisible,
-  onClose,
-  idGrupo,
-}: Props) {
-  const { data, isLoading, refetch, isError, error } = useUniqueGrupo(idGrupo);
+export default function RegistroFrequencia({isVisible, onClose, idGrupo}: Props){
+   const {data, isLoading, refetch, isError, error} = useUniqueGrupo(idGrupo);
+   const { mutate: registrarFrequenciaGrupo, isPending} = useRegistrarFrequencia();
+   const {control, reset, handleSubmit} = useForm<FrequenciaSchemaType>({
+    resolver: zodResolver(frequenciaSchema),
+    defaultValues: {
+      frequencias: []
+    },
+    
+   })
+   const {fields} = useFieldArray({
+    control,
+    name: "frequencias"
+   })
 
-  const { mutate: registrarFrequenciaGrupo, isPending } =
-    useRegistrarFrequencia();
+   const onSubmit = (data: FrequenciaSchemaType) => {
+    console.log(data);
+   }
 
-  const [frequencias, setFrequencias] = useState<FrequenciaPost[]>([]);
-  const [dataFrequencia, setDataFrequencia] = useState<string>("");
-
-  useEffect(() => {
-    if (data?.crismandos) {
-      const frequenciasIniciais: FrequenciaPost[] = data.crismandos.map(
-        (crismando) => ({
-          crismando: crismando._id!,
-          status: "P",
-          dataPresenca: dataFrequencia,
-          justificativa: "",
-        })
-      );
-      setFrequencias(frequenciasIniciais);
-    }
-  }, [data, dataFrequencia]);
-
-  const handleJustificativaChange = (crismandoId: string, text: string) => {
-    setFrequencias((prevFrequencias) =>
-      prevFrequencias.map((frequencia) =>
-        frequencia.crismando === crismandoId ? { ...frequencia, justificativa: text } : frequencia
-      )
-    );
-  };
-
-  const handleStatusChange = (crismandoId: string, status: string) => {
-    setFrequencias((prevFrequencias) =>
-      prevFrequencias.map((frequencia) =>
-       frequencia.crismando === crismandoId ? { ...frequencia, status: status } : frequencia
-      )
-    );
-  };
-
-  const handleRegistrarFrequenciaGrupo = () => {
-    if (!Array.isArray(frequencias) || frequencias.length === 0) {
+     const handleRegistrarFrequenciaGrupo = (data: FrequenciaSchemaType) => {
+    if (!Array.isArray(data.frequencias) || data.frequencias.length === 0) {
       Toast.show({
         type: "error",
         text1: "Não foi possível registrar a frequência do grupo!",
@@ -81,25 +76,15 @@ export default function RegistroFrequencia({
       return;
     }
 
-    const dataConvertida = parse(dataFrequencia, "dd/MM/yyyy", new Date());
-
-    if (!isValid(dataConvertida)) {
-      Toast.show({
-        type: "error",
-        text1: "Data inválida!",
-      });
-      return;
-    }
-
     registrarFrequenciaGrupo(
-      { frequencias },
+      { dataPresenca: data.dataPresenca, frequencias: data.frequencias},
       {
         onSuccess: () => {
           Toast.show({
             type: "success",
             text1: "Frequência registrada com sucesso!",
           });
-          console.log(frequencias);
+          console.log("Dados enviado: ",data);
           onClose();
         },
         onError: (err: any) => {
@@ -120,11 +105,24 @@ export default function RegistroFrequencia({
     );
   };
 
+
+  useEffect(() => {
+
+      reset({
+        dataPresenca: formatToBrazilianDate(new Date().toISOString()),
+        frequencias: data?.crismandos?.map((crismando) => ({
+          crismando: crismando._id!,
+          status: "P",
+          justificativa: ""
+        }))
+      })
+  }, [data, reset])
+
   if (isLoading || isPending) {
     return <Loading isVisible={isLoading} />;
   }
 
-  if (isError) {
+    if (isError) {
     return (
       <Modal visible={isVisible} onRequestClose={onClose} transparent={true} animationType="fade">
         <TouchableWithoutFeedback onPress={onClose}>
@@ -147,90 +145,56 @@ export default function RegistroFrequencia({
     );
   }
 
+
   return (
     <Modal visible={isVisible} onRequestClose={onClose} transparent animationType="slide">
-            <View style={styles.modalContent}>
-              <Feather
+          <View style={styles.modalContent}>
+               <Feather
                 name="x"
                 color="gray"
                 size={30}
                 onPress={onClose}
                 style={{ alignSelf: "flex-start" }}
-              />
-              <Text style={styles.title}>
-                Registrar Frequência do Grupo: {data?.nomeGrupo}
-              </Text>
-
-              {data?.crismandos?.length === 0 ? (
-                <Text>Nenhum crismando registrado no grupo.</Text>
-              ) : (
-                <FlatList
-                  data={data?.crismandos as Crismando[]}
-                  keyExtractor={(item) => item._id!}
-                  renderItem={({ item }) => (
-                    <CrismandoFrequenciaRegister
-                      data={item}
-                      selectedStatus={
-                        frequencias.find((f) => f.crismando === item._id)
-                          ?.status as string
-                      }
-                      onChangeStatus={(status) =>
-                        handleStatusChange(item._id!, status)
-                      }
-                      onChangeJustificativa={(text) =>
-                        handleJustificativaChange(item._id!, text)
-                      }
-                      justificativa={
-                        frequencias.find((f) => f.crismando === item._id)
-                          ?.justificativa as string || ""
-                      }
-                    />
-                  )}
-                  contentContainerStyle={{ paddingVertical: 15, gap: 6}}
-                  ListHeaderComponent={
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.labelInput}>Data da Frequência:</Text>
-                      <View style={styles.dataInput}>
-                        <View style={styles.inputIcon}>
-                          <Feather name="calendar" size={24} color="black" />
-                        </View>
-                        <MaskInput
-                          onChangeText={setDataFrequencia}
-                          value={dataFrequencia}
-                          mask={Masks.DATE_DDMMYYYY}
-                          style={styles.input}
-                        />
-                      </View>
-                    </View>
-                  }
-                  // ListFooterComponent={
-                  //   <Button
-                  //     onPress={handleRegistrarFrequenciaGrupo}
-                  //     style={{ width: "100%", marginTop: 10 }}
-                  //     disabled={isPending}
-                  //   >
-                  //     <Button.Title>Registrar Frequência</Button.Title>
-                  //   </Button>
-                  // }
-                  showsVerticalScrollIndicator={false}
                 />
-              )}
+              <Text style={styles.title}>
+                 Registrar Frequência do Grupo: {data?.nomeGrupo}
+              </Text>
+              <FlatList 
+                data={fields}
+                keyExtractor={(item) => item.id}
+                renderItem={({item, index}) => {
+                  const crismandoAtual = data?.crismandos?.[index]
 
-              <Button
-                onPress={handleRegistrarFrequenciaGrupo}
-                style={{ width: "100%", marginTop: 10 }}
-                disabled={isPending}
-              >
-                <Button.Title>Registrar Frequência</Button.Title>
-              </Button>
-              {/* <Button
-                onPress={onClose}
-                style={{ width: "100%", marginTop: 10 }}
-              >
-                <Button.Title>Fechar</Button.Title>
-              </Button> */}
-            </View>
-
+                  return (
+                    <CrismandoFrequenciaRegister 
+                    index={index}
+                    control={control}
+                    nomeCrismando={crismandoAtual?.nomeCrismando!}
+                    />
+                  )
+                }}
+                ListHeaderComponent={
+                  <MaskInputs 
+                  label="Data da Frequência"
+                  control={control}
+                  icon="calendar"
+                  name="dataPresenca"
+                  maskType="data"
+                  disabled={false}
+                  />
+                }
+                ListFooterComponent={
+                  <Button onPress={handleSubmit(handleRegistrarFrequenciaGrupo)} style={{width: "100%", marginTop: 15}} disabled={isPending || isLoading}>
+                    <Button.Title>Registrar Frequência</Button.Title>
+                  </Button>
+                }
+                ListEmptyComponent={
+                  () => <Text style={styles.emptyMessage}>Nenhum crismando encontrado no grupo.</Text>
+                }
+                contentContainerStyle={{paddingBottom: 68}}
+                showsVerticalScrollIndicator={false}
+              />
+          </View>
     </Modal>
-  );
+  )
 }

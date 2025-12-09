@@ -7,6 +7,7 @@ const { width } = Dimensions.get("window");
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingVertical: 8,
   },
   nomeCrismando: {
     fontFamily: fontFamily.bold,
@@ -41,6 +42,8 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.gray[300],
     borderRadius: 4,
-    padding: 4,
+    paddingHorizontal: 15,
+    marginTop: 5,
+    fontFamily: fontFamily.regular,
   }
 });

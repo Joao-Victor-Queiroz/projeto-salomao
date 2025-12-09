@@ -5,12 +5,14 @@ import MaskInput, { Masks } from "react-native-mask-input";
 import clsx from "clsx";
 import s from "./styles";
 
+type MaskType = "telefone" | "cep" | "data"
+
 type Props = {
   icon: keyof typeof Feather.glyphMap;
   label?: string;
   name: string;
   control: any;
-  maskType: string;
+  maskType: MaskType;
   disabled?: boolean;
   rules?: object;
 };

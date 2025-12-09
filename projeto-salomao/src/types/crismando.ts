@@ -59,10 +59,11 @@ export type Frequencia = FrequenciaPost & {
 };
 
 export type FrequenciaPost = {
+ 
   crismando: string;
   status: string;
-  dataPresenca: string;
-  justificativa: string | undefined;
+  justificativa?: string | undefined;
+  
 };
 
 export type FrequenciaEdit = {
