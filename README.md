@@ -29,6 +29,7 @@ Desenvolvi uma solução Full Stack para **digitalizar 100% desse processo**. O 
 
 ## 📸 Take a look!
 ### Login e Visualização de Crismando(s)
+**Todos os dados são fictícios**
 <div align="center">
   <img src="https://github.com/user-attachments/assets/108449bb-ff8d-4d57-8d9f-58a1d7eefd92" width="30%" alt="tela-login" />
   <img src="https://github.com/user-attachments/assets/eeb1954d-4e11-4c7e-82d2-5d3b4d0e6821" width="30%" alt="tela-lista-crismandos" />
